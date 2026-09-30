@@ -505,14 +505,13 @@ function pushPayload(): string {
 }
 
 /** Pair with a host (address + code or its QR code), then sync. With
- *  `autoMerge`, a first pairing with data on both sides merges silently
- *  instead of asking: scanning someone's QR is explicit consent from both
- *  sides, and merge (union) never destroys data — only the overwrite
- *  options do, so those stay behind the question. */
+ *  `onFirstPairPrompt`, the caller is told the moment a first-pairing
+ *  choice is waiting (e.g. the QR sheet closes itself so the question —
+ *  the same panel manual pairing uses — is visible in the settings). */
 export async function pairAndSync(
   addr: string,
   code: string,
-  opts?: { autoMerge?: boolean },
+  opts?: { onFirstPairPrompt?: () => void },
 ): Promise<boolean> {
   if (!isTauri() || busy) return false;
   busy = true;
@@ -532,9 +531,10 @@ export async function pairAndSync(
     commitCfg({ role: "guest", addr, keyId: res.id, key: res.key, pairedAt: Date.now() });
     useSyncStore.setState({ guestConnected: true, phase: "syncing" });
 
-    if (!wasPaired && localHasData() && !opts?.autoMerge) {
+    if (!wasPaired && localHasData()) {
       // First pairing and both sides may hold data: ask what to keep.
       useSyncStore.setState({ pairPrompt: { remote: null } });
+      opts?.onFirstPairPrompt?.();
       const remote = await requestPeerData();
       if (remote) useSyncStore.setState({ pairPrompt: { remote } });
       const choice = await askChoice();
@@ -558,7 +558,7 @@ export async function pairAndSync(
     } else {
       await deliver(pushPayload());
       commitCfg({ lastSync: Date.now() });
-      toast(opts?.autoMerge ? "Paired and merged" : "Paired and synced");
+      toast("Paired and synced");
     }
     return true;
   } catch (e) {

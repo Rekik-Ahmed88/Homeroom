@@ -145,11 +145,12 @@ export function ScanSheet({ onDone }: { onDone: () => void }) {
         // dead camera feed meanwhile. Safe post-success — the result was
         // already resolved, so the reject inside is a no-op.
         await cancelNativeScan();
-        // autoMerge: scanning the host's QR is consent from both sides,
-        // and merge never destroys data — so pair without sheltering the
-        // merge/overwrite question behind this sheet (the user couldn't
-        // see or answer it while the camera UI is up).
-        await pairAndSync(parsed.addr, parsed.code, { autoMerge: true });
+        // A first pairing may ask merge/overwrite: that panel lives in the
+        // settings drawer underneath this sheet, so step aside the moment
+        // it appears — same question as manual pairing, then and there.
+        await pairAndSync(parsed.addr, parsed.code, {
+          onFirstPairPrompt: () => finish(true),
+        });
         if (!cancelled.current) finish(true);
       } catch (e) {
         if (cancelled.current) return;
