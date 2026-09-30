@@ -504,8 +504,16 @@ function pushPayload(): string {
   return JSON.stringify({ t: "push", data: pickAppData(useAppStore.getState()) });
 }
 
-/** Pair with a host (address + code or its QR code), then sync. */
-export async function pairAndSync(addr: string, code: string): Promise<boolean> {
+/** Pair with a host (address + code or its QR code), then sync. With
+ *  `autoMerge`, a first pairing with data on both sides merges silently
+ *  instead of asking: scanning someone's QR is explicit consent from both
+ *  sides, and merge (union) never destroys data — only the overwrite
+ *  options do, so those stay behind the question. */
+export async function pairAndSync(
+  addr: string,
+  code: string,
+  opts?: { autoMerge?: boolean },
+): Promise<boolean> {
   if (!isTauri() || busy) return false;
   busy = true;
   useSyncStore.setState({ phase: "connecting", error: null });
@@ -524,7 +532,7 @@ export async function pairAndSync(addr: string, code: string): Promise<boolean> 
     commitCfg({ role: "guest", addr, keyId: res.id, key: res.key, pairedAt: Date.now() });
     useSyncStore.setState({ guestConnected: true, phase: "syncing" });
 
-    if (!wasPaired && localHasData()) {
+    if (!wasPaired && localHasData() && !opts?.autoMerge) {
       // First pairing and both sides may hold data: ask what to keep.
       useSyncStore.setState({ pairPrompt: { remote: null } });
       const remote = await requestPeerData();
@@ -550,7 +558,7 @@ export async function pairAndSync(addr: string, code: string): Promise<boolean> 
     } else {
       await deliver(pushPayload());
       commitCfg({ lastSync: Date.now() });
-      toast("Paired and synced");
+      toast(opts?.autoMerge ? "Paired and merged" : "Paired and synced");
     }
     return true;
   } catch (e) {
