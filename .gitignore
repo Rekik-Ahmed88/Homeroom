@@ -1,0 +1,29 @@
+# deps / build
+node_modules/
+dist/
+*.local
+
+# tauri
+src-tauri/target/
+src-tauri/gen/
+
+# router codegen cache
+.tanstack/
+
+# local tooling / scratch
+opencode.json
+artifacts/
+attachments/
+*.mp4
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# signing keys must never be committed (release updates need the same key)
+*.keystore
+*.jks
+*.idsig

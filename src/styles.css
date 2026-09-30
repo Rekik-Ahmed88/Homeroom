@@ -1,0 +1,300 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Figtree";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("./assets/fonts/figtree-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url("./assets/fonts/fraunces-latin.woff2") format("woff2");
+}
+
+@theme {
+  --color-bg: #f3efe6;
+  --color-elevated: #faf8f3;
+  --color-surface: #ebe6db;
+  --color-fg: #1a1714;
+  --color-muted: #6b645c;
+  --color-subtle: #9a9389;
+  --color-primary: #2c3d38;
+  --color-primary-fg: #f3efe6;
+  --color-border: #d9d1c3;
+  --color-scrim: #1a1714;
+  --color-danger: #8f3d32;
+  --color-danger-soft: #f3e4df;
+  --color-success: #3d5a45;
+  --color-success-soft: #e3ece4;
+  --color-warn: #8a6a32;
+  --color-warn-soft: #f3ead6;
+  --color-sub-pine: #3d5a45;
+  --color-sub-slate: #4a5a68;
+  --color-sub-clay: #7a5347;
+  --color-sub-ink: #3a3a48;
+  --color-sub-olive: #5c5a38;
+  --color-sub-dusk: #4a4558;
+  --color-sub-sea: #3a5558;
+  --color-sub-wine: #6a3a44;
+  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --shadow-border: 0px 0px 0px 1px rgb(26 23 20 / 0.06),
+    0px 1px 2px -1px rgb(26 23 20 / 0.06), 0px 2px 4px 0px rgb(26 23 20 / 0.04);
+  --shadow-border-hover: 0px 0px 0px 1px rgb(26 23 20 / 0.08),
+    0px 1px 2px -1px rgb(26 23 20 / 0.08), 0px 2px 4px 0px rgb(26 23 20 / 0.06);
+  --shadow-raised: 0px 0px 0px 1px rgb(26 23 20 / 0.06),
+    0px 8px 24px -8px rgb(26 23 20 / 0.16);
+}
+
+.dark {
+  color-scheme: dark;
+  --color-bg: #14110d;
+  --color-elevated: #1e1a14;
+  --color-surface: #2b251b;
+  --color-fg: #ece4d3;
+  --color-muted: #ada191;
+  --color-subtle: #7c7362;
+  --color-primary: #93b5a6;
+  --color-primary-fg: #131c17;
+  --color-border: #3a3325;
+  --color-scrim: #000000;
+  --color-danger: #cf8779;
+  --color-danger-soft: #38211d;
+  --color-success: #8fb598;
+  --color-success-soft: #1e2e23;
+  --color-warn: #cfa55c;
+  --color-warn-soft: #342b16;
+  --color-sub-pine: #6da585;
+  --color-sub-slate: #8299ad;
+  --color-sub-clay: #c08a78;
+  --color-sub-ink: #a2a8bd;
+  --color-sub-olive: #aaa66b;
+  --color-sub-dusk: #9c90c2;
+  --color-sub-sea: #71a8ab;
+  --color-sub-wine: #c2808d;
+  --shadow-border: 0px 0px 0px 1px rgb(0 0 0 / 0.4),
+    0px 1px 2px -1px rgb(0 0 0 / 0.4), 0px 2px 4px 0px rgb(0 0 0 / 0.3);
+  --shadow-border-hover: 0px 0px 0px 1px rgb(0 0 0 / 0.5),
+    0px 1px 2px -1px rgb(0 0 0 / 0.5), 0px 2px 4px 0px rgb(0 0 0 / 0.4);
+  --shadow-raised: 0px 0px 0px 1px rgb(0 0 0 / 0.5),
+    0px 8px 24px -8px rgb(0 0 0 / 0.6);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    /* Tells native controls (dropdown popups, date/time pickers,
+       scrollbars, spinners) which scheme to render in. */
+    color-scheme: light;
+  }
+
+  /* Desktop keeps native scrollbars (wheel users rely on them). Android
+     hides them: the UA class is set before first paint in index.html, and
+     MainActivity additionally disables the WebView's overlay scrollbar
+     because it ignores content CSS. */
+  html.android * {
+    scrollbar-width: none;
+  }
+
+  html.android *::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  body {
+    min-height: 100dvh;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    font-family: var(--font-display);
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  /* Native dropdown rows follow the app palette. (The popup frame itself
+     is drawn by the system theme; color-scheme above picks its variant.) */
+  option {
+    background-color: var(--color-elevated);
+    color: var(--color-fg);
+  }
+
+  /* Keep the date/time picker glyph clickable and visible in both themes.
+     color-scheme renders the glyph itself in the matching variant. */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.65;
+  }
+  .dark input[type="date"]::-webkit-calendar-picker-indicator,
+  .dark input[type="time"]::-webkit-calendar-picker-indicator {
+    opacity: 1;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  .app-header {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
+
+  .app-tabbar {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .app-main-timetable {
+    padding-bottom: calc(3.5rem + env(safe-area-inset-bottom));
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes overlay-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+}
+
+@keyframes sheet-out {
+  /* Starts at the finger's release position (--drag-y): a swipe-close keeps
+     sliding down from where it was instead of snapping back to the open
+     position before disappearing. Plain closes fall back to 0px. */
+  from {
+    transform: translateY(var(--drag-y, 0px));
+  }
+  to {
+    transform: translateY(calc(var(--drag-y, 0px) + 40px));
+    opacity: 0;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+@layer utilities {
+  .animate-rise {
+    animation: rise 0.45s cubic-bezier(0.21, 0.9, 0.35, 1) both;
+  }
+  .animate-overlay-in {
+    animation: overlay-in 0.18s ease-out both;
+  }
+  .animate-overlay-out {
+    animation: overlay-out 0.21s ease-in both;
+  }
+  .animate-sheet-in {
+    animation: sheet-in 0.24s cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+  .animate-sheet-out {
+    animation: sheet-out 0.21s cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+  .animate-toast-in {
+    animation: toast-in 0.22s ease-out both;
+  }
+  .animate-pop {
+    animation: pop 0.25s ease-out;
+  }
+  .animate-menu-in {
+    animation: menu-in 0.15s ease-out both;
+    transform-origin: top center;
+  }
+}
+
+/* Set by ui/drawer.tsx while an entry animation waits for its first
+   painted frame: the paused animation holds the start state (invisible,
+   offset), so unpausing plays the full animation instead of it finishing
+   unseen behind first-open style/layout work. Deliberately unlayered —
+   normal unlayered declarations outrank the layered utility's
+   `animation` shorthand, which resets animation-play-state. */
+[data-anim-paused] {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

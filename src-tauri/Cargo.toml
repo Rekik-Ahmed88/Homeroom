@@ -1,0 +1,30 @@
+[package]
+name = "homeroom"
+version = "0.1.0"
+description = "Student planner for timetable, homework, and attendance."
+authors = ["you"]
+edition = "2021"
+
+[lib]
+name = "homeroom_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["custom-protocol"] }
+tauri-plugin-notification = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-barcode-scanner = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# LAN sync: X25519 key agreement + ChaCha20-Poly1305 AEAD (all pure Rust,
+# no C toolchain beyond the NDK — keeps the Android cross-build simple).
+x25519-dalek = { version = "2", features = ["static_secrets"] }
+chacha20poly1305 = "0.10"
+hkdf = "0.12"
+sha2 = "0.10"
+rand = "0.8"
+if-addrs = "0.13"

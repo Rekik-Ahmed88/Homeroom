@@ -1,0 +1,15 @@
+# Release-notes categories for GitHub's auto-generated changelogs.
+# Entries are grouped by PR label — label PRs with `feat`/`fix`/etc. so they
+# land in the right bucket. Unlabeled entries fall into "Other changes".
+changelog:
+  exclude:
+    authors: [dependabot]
+  categories:
+    - title: Features
+      labels: [feat, feature, enhancement]
+    - title: Bug fixes
+      labels: [fix, bug, bugfix]
+    - title: Maintenance
+      labels: [chore, refactor, docs, ci, build, test, perf]
+    - title: Other changes
+      labels: ["*"]
