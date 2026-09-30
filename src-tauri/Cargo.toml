@@ -1,6 +1,6 @@
 [package]
 name = "homeroom"
-version = "0.1.0"
+version = "0.1.1"
 description = "Student planner for timetable, homework, and attendance."
 authors = ["you"]
 edition = "2021"

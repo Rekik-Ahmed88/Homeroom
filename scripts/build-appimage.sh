@@ -76,17 +76,20 @@ ldd "$APPDIR/usr/bin/homeroom" | grep "=> /" | awk '{print $3}' | while read lib
   cp "$lib" "$APPDIR/usr/lib/" 2>/dev/null || true
 done
 
+# Version follows package.json so releases stay in sync with the tag.
+VERSION="$(node -p "require('./package.json').version")"
+
 # Create AppImage using appimagetool (no FUSE 2 needed)
 echo "Creating AppImage..."
-ARCH=x86_64 "$APPDIR_TOOL" "$APPDIR" "src-tauri/target/release/Homeroom_0.1.0_amd64.AppImage"
+ARCH=x86_64 "$APPDIR_TOOL" "$APPDIR" "src-tauri/target/release/Homeroom_${VERSION}_amd64.AppImage"
 
 # Also pack a plain tarball for systems without FUSE 2 (AppImages need
 # libfuse2 to execute; the tarball runs via ./AppRun with no FUSE at all).
 echo "Creating tarball..."
-tar -czf "src-tauri/target/release/Homeroom_0.1.0_linux-x86_64.tar.gz" \
+tar -czf "src-tauri/target/release/Homeroom_${VERSION}_linux-x86_64.tar.gz" \
   -C "src-tauri/target/release" \
   --transform 's,^Homeroom.AppDir,Homeroom,' Homeroom.AppDir
 
 echo "Done!"
-echo "  AppImage: src-tauri/target/release/Homeroom_0.1.0_amd64.AppImage (needs libfuse2 to run)"
-echo "  Tarball:  src-tauri/target/release/Homeroom_0.1.0_linux-x86_64.tar.gz (extract and run ./Homeroom/AppRun, no FUSE needed)"
+echo "  AppImage: src-tauri/target/release/Homeroom_${VERSION}_amd64.AppImage (needs libfuse2 to run)"
+echo "  Tarball:  src-tauri/target/release/Homeroom_${VERSION}_linux-x86_64.tar.gz (extract and run ./Homeroom/AppRun, no FUSE needed)"
