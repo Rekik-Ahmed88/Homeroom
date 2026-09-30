@@ -143,7 +143,7 @@ const PAIR_CHOICE_TIMEOUT_MS = 180_000;
  */
 let applying = false;
 let pushTimer: ReturnType<typeof setTimeout> | null = null;
-let choiceResolve: ((c: PairChoice) => void) | null = null;
+let choiceResolve: ((c: PairChoice | null) => void) | null = null;
 let peekResolve: ((d: AppData | null) => void) | null = null;
 /** Generation of our active outbound connection (guards stale readers). */
 let guestGen: number | null = null;
@@ -476,11 +476,11 @@ function requestPeerData(): Promise<AppData | null> {
 }
 
 /** Show the first-pair question until the drawer answers (or times out). */
-function askChoice(): Promise<PairChoice> {
+function askChoice(): Promise<PairChoice | null> {
   return new Promise((resolve) => {
     let done = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
-    const finish = (c: PairChoice) => {
+    const finish = (c: PairChoice | null) => {
       if (done) return;
       done = true;
       if (timer) clearTimeout(timer);
@@ -530,6 +530,10 @@ export async function pairAndSync(addr: string, code: string): Promise<boolean> 
       const remote = await requestPeerData();
       if (remote) useSyncStore.setState({ pairPrompt: { remote } });
       const choice = await askChoice();
+      // Null = the wait was abandoned (unpaired mid-prompt): keys were
+      // exchanged but no data decision was made — skip syncing entirely
+      // rather than merging behind the user's back. The next sync merges.
+      if (choice === null) return true;
       if (choice === "local") {
         await deliver(JSON.stringify({ t: "seed", data: pickAppData(useAppStore.getState()) }));
         commitCfg({ lastSync: Date.now() });
@@ -630,9 +634,11 @@ export function unpair() {
   }
   guestGen = null;
   useSyncStore.setState({ guestConnected: false, pairPrompt: null });
-  // Unblock a pairing flow waiting on the first-pair question.
+  // Abandon (don't answer) a pairing flow waiting on the first-pair
+  // question: answering "merge" here would sync + toast after the user
+  // explicitly unpaired.
   peekResolve?.(null);
-  choiceResolve?.("merge");
+  choiceResolve?.(null);
 }
 
 /**

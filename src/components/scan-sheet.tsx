@@ -66,6 +66,13 @@ export function ScanSheet({ onDone }: { onDone: () => void }) {
       body.style.background = prevBodyBg;
       for (const { el, prev } of hidden) el.style.visibility = prev;
       hidden.length = 0;
+      // The camera surface coming down can leave the WebView showing a
+      // stale (black) frame; a resize forces a full relayout + repaint.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          window.dispatchEvent(new Event("resize"));
+        });
+      });
     };
 
     // unwind=true pops the guard entry we pushed (the drawer swallows that
@@ -133,6 +140,11 @@ export function ScanSheet({ onDone }: { onDone: () => void }) {
           return;
         }
         setPairing(true);
+        // Stop the preview immediately (the plugin only dismantles it
+        // lazily): pairing takes a moment and nobody should stare at a
+        // dead camera feed meanwhile. Safe post-success — the result was
+        // already resolved, so the reject inside is a no-op.
+        await cancelNativeScan();
         await pairAndSync(parsed.addr, parsed.code);
         if (!cancelled.current) finish(true);
       } catch (e) {
