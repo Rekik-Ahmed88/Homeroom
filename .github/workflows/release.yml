@@ -67,8 +67,10 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android
-      - uses: android-actions/setup-android@v3
       - name: Install Android NDK
+        # Runner images ship cmdline-tools (not on PATH); setup-android is
+        # intentionally NOT used — it requests the long-removed `tools`
+        # package and fails. ANDROID_HOME is preset on the runner.
         run: |
           yes | "$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null
           "$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager "ndk;28.2.13676358"
