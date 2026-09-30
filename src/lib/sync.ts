@@ -545,15 +545,15 @@ export async function pairAndSync(
       if (choice === "local") {
         await deliver(JSON.stringify({ t: "seed", data: pickAppData(useAppStore.getState()) }));
         commitCfg({ lastSync: Date.now() });
-        toast("Paired — the other device now uses this device’s data");
+        toast("Paired — kept only this device");
       } else if (choice === "remote" && remote) {
         withApplying(() => applyBackup(remote));
         commitCfg({ lastSync: Date.now() });
-        toast("Paired — data taken from the other device");
+        toast("Paired — kept only the other device");
       } else {
         await deliver(pushPayload());
         commitCfg({ lastSync: Date.now() });
-        toast("Paired and merged");
+        toast("Paired — kept both");
       }
     } else {
       await deliver(pushPayload());

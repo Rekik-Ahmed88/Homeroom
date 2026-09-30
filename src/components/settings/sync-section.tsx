@@ -77,7 +77,7 @@ export function SyncSection({ drawerOpen }: { drawerOpen: boolean }) {
       <div className="mt-3 flex flex-col gap-2">
         {sync.pairPrompt ? (
           <div className="rounded-md bg-surface p-3">
-            <p className="text-sm">First sync with this device</p>
+            <p className="text-sm">First sync — choose what to keep</p>
             {sync.pairPrompt.remote ? (
               <>
                 <p className="mt-1 text-xs text-subtle">
@@ -93,8 +93,9 @@ export function SyncSection({ drawerOpen }: { drawerOpen: boolean }) {
               </p>
             )}
             <p className="mt-1 text-xs text-subtle">
-              Merge keeps records from both devices; overwriting
-              leaves a single copy on every device.
+              Keeping both combines everything and deletes nothing.
+              Keeping only one side erases the other side everywhere —
+              on both devices. If you don’t choose, both are kept.
             </p>
             <div className="mt-2 flex flex-col gap-2">
               <Button
@@ -102,14 +103,14 @@ export function SyncSection({ drawerOpen }: { drawerOpen: boolean }) {
                 size="sm"
                 onClick={() => resolvePairChoice("merge")}
               >
-                Merge both devices
+                Keep both — merge
               </Button>
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={() => resolvePairChoice("local")}
               >
-                Overwrite with this device’s data
+                Keep only this device
               </Button>
               <Button
                 variant="secondary"
@@ -117,7 +118,7 @@ export function SyncSection({ drawerOpen }: { drawerOpen: boolean }) {
                 disabled={!sync.pairPrompt.remote}
                 onClick={() => resolvePairChoice("remote")}
               >
-                Overwrite with the other device’s data
+                Keep only the other device
               </Button>
             </div>
           </div>
