@@ -285,7 +285,10 @@ export function Drawer({
       void sheetRef.current?.offsetHeight;
       void scrimRef.current?.offsetHeight;
       setShown(true);
-      enteredTimer = window.setTimeout(() => setEntered(true), 300);
+      // Drop the entry class when the animation actually finishes (jank
+      // can push completion past any fixed timer); the fallback only
+      // covers animations that never start (hidden tabs).
+      enteredTimer = window.setTimeout(() => setEntered(true), 1200);
     };
     let last = 0;
     let good = 0;
@@ -410,6 +413,9 @@ export function Drawer({
         onPointerMove={onPointerMove}
         onPointerUp={onPointerEnd}
         onPointerCancel={onPointerEnd}
+        onAnimationEnd={(e) => {
+          if (e.target === e.currentTarget && openRef.current) setEntered(true);
+        }}
         style={
           {
             // The exit keyframes start from where a drag was released, so a
