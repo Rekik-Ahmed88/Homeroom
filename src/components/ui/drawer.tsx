@@ -10,6 +10,7 @@ import {
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { pushEscapeLayer } from "@/components/ui/escape-stack";
+import { isScanActive, takeSwallowedDrawerPop } from "@/lib/scan-guard";
 
 const EXIT_MS = 210;
 
@@ -361,6 +362,9 @@ export function Drawer({
       }
       pushedRef.current = true;
       const onPopState = () => {
+        // A pop the scan sheet caused or is handling is not ours: the
+        // sheet cancels/unwinds itself, the drawer stays open.
+        if (takeSwallowedDrawerPop() || isScanActive()) return;
         pushedRef.current = false;
         onOpenChangeRef.current(false);
       };

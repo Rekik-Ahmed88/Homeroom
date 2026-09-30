@@ -7,9 +7,9 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { ScanSheet } from "@/components/scan-sheet";
 import {
   pairAndSync,
-  parseSyncQr,
   resolvePairChoice,
   setAutoSync,
   startHosting,
@@ -20,13 +20,14 @@ import {
   useSyncStore,
 } from "@/lib/sync";
 import { cn } from "@/lib/utils";
-import { countLine, currentInventory, errMsg, syncStatus } from "./shared";
+import { countLine, currentInventory, syncStatus } from "./shared";
 
 export function SyncSection({ drawerOpen }: { drawerOpen: boolean }) {
   const sync = useSyncStore();
   const [joinAddr, setJoinAddr] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [qrAddrIdx, setQrAddrIdx] = useState(0);
+  const [scanOpen, setScanOpen] = useState(false);
 
   // Reset transient pair inputs whenever the drawer closes.
   useEffect(() => {
@@ -51,39 +52,10 @@ export function SyncSection({ drawerOpen }: { drawerOpen: boolean }) {
   }
 
   // Camera scanning needs the mobile plugin; Linux/macOS pair by hand.
+  // The sheet runs the camera windowed with its own viewfinder overlay,
+  // and owns back-gesture + Cancel behavior (see scan-sheet).
   const canScan =
     isTauri() && document.documentElement.classList.contains("android");
-
-  async function doScan() {
-    try {
-      // Dynamic import: the barcode-scanner plugin only exists on Android.
-      // A static import would pull its JS into the web/desktop bundle.
-      const scanner = await import("@tauri-apps/plugin-barcode-scanner");
-      let perm = await scanner.checkPermissions();
-      if (perm !== "granted") perm = await scanner.requestPermissions();
-      if (perm !== "granted") {
-        toast("Camera permission is needed to scan the QR code");
-        return;
-      }
-      const scanned = await scanner.scan({ formats: [scanner.Format.QRCode] });
-      const parsed = parseSyncQr(scanned.content);
-      if (!parsed) {
-        toast("That QR code isn’t a Homeroom pairing code");
-        return;
-      }
-      setJoinAddr(parsed.addr);
-      setJoinCode(parsed.code);
-      const ok = await pairAndSync(parsed.addr, parsed.code);
-      if (ok) {
-        setJoinAddr("");
-        setJoinCode("");
-      }
-    } catch (e) {
-      // Backing out of the scanner is not an error.
-      if (errMsg(e).toLowerCase().includes("cancel")) return;
-      toast(`Scan failed — ${errMsg(e)}`);
-    }
-  }
 
   function doUnpair() {
     unpair();
@@ -261,7 +233,7 @@ export function SyncSection({ drawerOpen }: { drawerOpen: boolean }) {
                 sync.phase === "connecting" ||
                 sync.phase === "syncing"
               }
-              onClick={() => void doScan()}
+              onClick={() => setScanOpen(true)}
             >
               <ScanLine /> Scan QR code
             </Button>
@@ -325,6 +297,7 @@ export function SyncSection({ drawerOpen }: { drawerOpen: boolean }) {
           </div>
         ) : null}
       </div>
+      {scanOpen ? <ScanSheet onDone={() => setScanOpen(false)} /> : null}
     </Field>
   );
 }
