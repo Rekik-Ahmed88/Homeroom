@@ -247,11 +247,15 @@ export function Drawer({
   }, [mounted]);
 
   // Entry animations (sheet + backdrop) mount paused — `data-anim-paused`
-  // holds the start frame (opacity 0, offset) — and only run once this
-  // sheet has painted at least once. The first open after app launch pays
-  // one-time style/layout work, so an animation clock started at insert
-  // time can finish before the first frame is ever shown and the sheet
-  // just appears. Unpausing after paint plays it in full either way.
+  // holds the start frame (opacity 0, offset) — and only run once the
+  // compositor is actually producing frames. The first open after app
+  // launch pays one-time style/layout work that can starve rAF for
+  // hundreds of ms; unpausing on a fixed timer then plays the 240ms entry
+  // through dropped frames and the sheet just appears. So arming waits for
+  // consecutive on-time frames instead: cheap on warm opens (~2 frames),
+  // however long a cold start needs. The safety timeout below only exists
+  // for hidden windows (rAF never fires there) — hidden means invisible,
+  // so unpausing late is harmless.
   // `entered` then drops the class so the keyframe fill can't fight the
   // drag translate (and can't replay when a drag override is lifted).
   const [armed, setArmed] = useState(false);
@@ -266,7 +270,7 @@ export function Drawer({
     setArmed(false);
     setEntered(false);
     let done = false;
-    let r2 = 0;
+    let raf = 0;
     let enteredTimer = 0;
     const arm = () => {
       if (done) return;
@@ -274,14 +278,21 @@ export function Drawer({
       setArmed(true);
       enteredTimer = window.setTimeout(() => setEntered(true), 300);
     };
-    const r1 = requestAnimationFrame(() => {
-      r2 = requestAnimationFrame(arm);
-    });
+    let last = 0;
+    let good = 0;
+    const tick = (t: number) => {
+      if (done) return;
+      if (last > 0 && t - last < 100) good += 1;
+      else good = 0;
+      last = t;
+      if (good >= 2) arm();
+      else raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
     // rAF never fires in a hidden window; never leave the sheet paused.
-    const safety = window.setTimeout(arm, 400);
+    const safety = window.setTimeout(arm, 1500);
     return () => {
-      cancelAnimationFrame(r1);
-      cancelAnimationFrame(r2);
+      cancelAnimationFrame(raf);
       window.clearTimeout(safety);
       window.clearTimeout(enteredTimer);
     };

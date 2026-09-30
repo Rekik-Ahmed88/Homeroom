@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Matches the icon art's green so the launcher mask always reads as
+       fully covered (no cream ring behind the tile). -->
+  <color name="ic_launcher_background">#2C3D38</color>
+</resources>
