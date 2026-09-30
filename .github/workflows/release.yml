@@ -75,6 +75,11 @@ jobs:
           yes | "$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null
           "$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager "ndk;28.2.13676358"
       - run: npm ci
+      - name: Init Android project
+        # src-tauri/gen/ is gitignored, so fresh checkouts need scaffolding.
+        run: |
+          source scripts/android-env.sh
+          npx tauri android init
       - name: Restore release keystore
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > /tmp/release.keystore
       - name: Build release APK
