@@ -1,0 +1,18 @@
+--------- beginning of crash
+09-30 21:38:57.968 15704 15704 E AndroidRuntime: FATAL EXCEPTION: main
+09-30 21:38:57.968 15704 15704 E AndroidRuntime: Process: com.homeroom.app, PID: 15704
+09-30 21:38:57.968 15704 15704 E AndroidRuntime: java.lang.NullPointerException: Attempt to invoke virtual method 'java.lang.Class java.lang.Object.getClass()' on a null object reference
+09-30 21:38:57.968 15704 15704 E AndroidRuntime: 	at bn1.<init>(r8-map-id-5fcdf8a549e83879a841c47a3c89e3b1770c6c71f85cfd0eb75bd505bcf60ac6:57)
+09-30 21:38:57.968 15704 15704 E AndroidRuntime: 	at mn1.e(r8-map-id-5fcdf8a549e83879a841c47a3c89e3b1770c6c71f85cfd0eb75bd505bcf60ac6:144)
+09-30 21:38:57.968 15704 15704 E AndroidRuntime: 	at vj.f(r8-map-id-5fcdf8a549e83879a841c47a3c89e3b1770c6c71f85cfd0eb75bd505bcf60ac6:28)
+09-30 21:38:57.968 15704 15704 E AndroidRuntime: 	at app.tauri.barcodescanner.BarcodeScannerPlugin.a(r8-map-id-5fcdf8a549e83879a841c47a3c89e3b1770c6c71f85cfd0eb75bd505bcf60ac6:293)
+09-30 21:38:57.968 15704 15704 E AndroidRuntime: 	at py.run(r8-map-id-5fcdf8a549e83879a841c47a3c89e3b1770c6c71f85cfd0eb75bd505bcf60ac6:97)
+09-30 21:38:57.968 15704 15704 E AndroidRuntime: 	at android.os.Handler.handleCallback(Handler.java:1070)
+09-30 21:38:57.968 15704 15704 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:125)
+09-30 21:38:57.968 15704 15704 E AndroidRuntime: 	at android.os.Looper.dispatchMessage(Looper.java:358)
+09-30 21:38:57.968 15704 15704 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:288)
+09-30 21:38:57.968 15704 15704 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:392)
+09-30 21:38:57.968 15704 15704 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:10346)
+09-30 21:38:57.968 15704 15704 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+09-30 21:38:57.968 15704 15704 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:638)
+09-30 21:38:57.968 15704 15704 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:972)

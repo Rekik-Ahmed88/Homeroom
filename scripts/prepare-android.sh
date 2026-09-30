@@ -22,6 +22,27 @@ echo "prepare-android: launcher icons copied"
 
 bash scripts/patch-android-manifest.sh
 
+# Deterministic versionCode from package.json (major*1000000 +
+# minor*10000 + patch*100, e.g. 0.1.1 -> 10100). The CLI auto-increments
+# a counter kept in gitignored gen/, so throwaway builds on different
+# machines produce incomparable codes and Android rejects updates with
+# INSTALL_FAILED_VERSION_DOWNGRADE. Deriving it from the app version keeps
+# every release monotonically increasing everywhere, including CI.
+VERSION="$(node -p "require('./package.json').version")"
+MAJOR="${VERSION%%.*}"
+REST="${VERSION#*.}"
+MINOR="${REST%%.*}"
+PATCH="${REST#*.}"
+PATCH="${PATCH%%[^0-9]*}"
+CODE=$((MAJOR * 1000000 + MINOR * 10000 + PATCH * 100))
+PROPS=src-tauri/gen/android/app/tauri.properties
+if [ -f "$PROPS" ] && grep -q "tauri.android.versionCode" "$PROPS"; then
+  sed -i "s/^tauri.android.versionCode=.*/tauri.android.versionCode=$CODE/" "$PROPS"
+else
+  echo "tauri.android.versionCode=$CODE" >> "$PROPS"
+fi
+echo "prepare-android: versionCode=$CODE"
+
 GRADLE=src-tauri/gen/android/app/build.gradle.kts
 if ! grep -q 'strictly("17.0.0")' "$GRADLE"; then
   python3 - "$GRADLE" <<'EOF'
