@@ -279,16 +279,6 @@
   }
 }
 
-/* Set by ui/drawer.tsx while an entry animation waits for its first
-   painted frame: the paused animation holds the start state (invisible,
-   offset), so unpausing plays the full animation instead of it finishing
-   unseen behind first-open style/layout work. Deliberately unlayered —
-   normal unlayered declarations outrank the layered utility's
-   `animation` shorthand, which resets animation-play-state. */
-[data-anim-paused] {
-  animation-play-state: paused;
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

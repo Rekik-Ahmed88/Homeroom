@@ -246,36 +246,45 @@ export function Drawer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted]);
 
-  // Entry animations (sheet + backdrop) mount paused — `data-anim-paused`
-  // holds the start frame (opacity 0, offset) — and only run once the
-  // compositor is actually producing frames. The first open after app
-  // launch pays one-time style/layout work that can starve rAF for
-  // hundreds of ms; unpausing on a fixed timer then plays the 240ms entry
-  // through dropped frames and the sheet just appears. So arming waits for
-  // consecutive on-time frames instead: cheap on warm opens (~2 frames),
-  // however long a cold start needs. The safety timeout below only exists
-  // for hidden windows (rAF never fires there) — hidden means invisible,
-  // so unpausing late is harmless.
-  // `entered` then drops the class so the keyframe fill can't fight the
-  // drag translate (and can't replay when a drag override is lifted).
-  const [armed, setArmed] = useState(false);
+  // Entry animations (sheet + backdrop) start from utility start frames
+  // (opacity-0, offset) with NO animation class, then — once the page is
+  // actually ready to present them — a forced reflow presents that frame
+  // and the animation class is added, so the keyframes always play from a
+  // presented start state. This avoids `animation-play-state: paused`,
+  // whose just-inserted fill state some WebViews (notably cold-start
+  // Android System WebView) resolve differently, making the first open
+  // after launch appear with no animation while warm opens animate fine.
+  // Readiness = webfonts settled (first paint often triggers their fetch
+  // and their arrival shifts layout mid-animation) plus consecutive
+  // on-time rAFs proving frames flow; cheap on warm opens, however long a
+  // cold start needs. The safety timeout only exists for hidden windows
+  // (rAF never fires there) — hidden means invisible, so starting late is
+  // harmless. `entered` then drops the class so the keyframe fill can't
+  // fight the drag translate (and can't replay when a drag override ends).
+  const [shown, setShown] = useState(false);
   const [entered, setEntered] = useState(false);
+  const scrimRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) {
-      setArmed(false);
+      setShown(false);
       setEntered(false);
       return;
     }
     if (!mounted) return;
-    setArmed(false);
+    setShown(false);
     setEntered(false);
     let done = false;
     let raf = 0;
     let enteredTimer = 0;
-    const arm = () => {
+    const show = () => {
       if (done) return;
       done = true;
-      setArmed(true);
+      // Present the utility start frame first: adding the animation class
+      // in a later commit guarantees the keyframes start from it instead
+      // of racing first-paint style resolution.
+      void sheetRef.current?.offsetHeight;
+      void scrimRef.current?.offsetHeight;
+      setShown(true);
       enteredTimer = window.setTimeout(() => setEntered(true), 300);
     };
     let last = 0;
@@ -285,12 +294,20 @@ export function Drawer({
       if (last > 0 && t - last < 100) good += 1;
       else good = 0;
       last = t;
-      if (good >= 2) arm();
+      if (good >= 3) show();
       else raf = requestAnimationFrame(tick);
     };
-    raf = requestAnimationFrame(tick);
-    // rAF never fires in a hidden window; never leave the sheet paused.
-    const safety = window.setTimeout(arm, 1500);
+    let fonts: Promise<unknown> = Promise.resolve();
+    try {
+      if (document.fonts) fonts = document.fonts.ready;
+    } catch {
+      // Non-browser contexts: skip straight to the frame gate.
+    }
+    void fonts.then(() => {
+      if (!done) raf = requestAnimationFrame(tick);
+    });
+    // rAF never fires in a hidden window; never leave the sheet stuck hidden.
+    const safety = window.setTimeout(show, 2500);
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(safety);
@@ -375,11 +392,11 @@ export function Drawer({
   return createPortal(
     <SheetContext.Provider value={{ titleId, descId }}>
       <div
+        ref={scrimRef}
         className={cn(
           "fixed inset-0 z-50 bg-scrim/30",
-          open ? "animate-overlay-in" : "animate-overlay-out",
+          open ? (shown ? "animate-overlay-in" : "opacity-0") : "animate-overlay-out",
         )}
-        data-anim-paused={open && !armed ? "" : undefined}
         onClick={() => onOpenChange(false)}
         aria-hidden
       />
@@ -389,7 +406,6 @@ export function Drawer({
         aria-labelledby={titleId}
         aria-describedby={descId}
         ref={sheetRef}
-        data-anim-paused={open && !armed ? "" : undefined}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerEnd}
@@ -400,16 +416,22 @@ export function Drawer({
             // swipe-close continues downward instead of jumping back up first.
             "--drag-y": `${dragY}px`,
             transform: dragging || !open ? `translateY(${dragY}px)` : undefined,
-            // No transitions while paused: keep the pre-paint start frame
-            // (and any exit) purely animation-driven.
-            transition: dragging || !armed ? "none" : "transform 160ms ease-out",
+            // No transitions before entry: the pre-entry start frame (and
+            // any exit) stays purely animation-driven.
+            transition: dragging || !shown ? "none" : "transform 160ms ease-out",
             animation: dragging ? "none" : undefined,
             touchAction: dragging ? "none" : undefined,
           } as React.CSSProperties
         }
         className={cn(
           "fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-hidden rounded-t-xl bg-bg shadow-raised outline-none",
-          open ? (entered ? "" : "animate-sheet-in") : "animate-sheet-out",
+          open
+            ? shown
+              ? entered
+                ? ""
+                : "animate-sheet-in"
+              : "translate-y-10 opacity-0"
+            : "animate-sheet-out",
         )}
       >
         <div className="mx-auto mt-3 h-1 w-10 shrink-0 rounded-full bg-border" />

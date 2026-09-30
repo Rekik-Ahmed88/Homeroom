@@ -22,6 +22,27 @@ echo "prepare-android: launcher icons copied"
 
 bash scripts/patch-android-manifest.sh
 
+# R8 runs on release builds (mapping.txt in outputs proves it) and the
+# barcode-scanner plugin ships no ML Kit keep rules: R8 renames the
+# reflectively-instantiated registrars and the scanner dies with an NPE on
+# open. The app template already feeds every *.pro under app/ to R8, so
+# append the keeps to the generated proguard-rules.pro (guarded: re-runs
+# and template-owned content above are untouched).
+PROGUARD=src-tauri/gen/android/app/proguard-rules.pro
+[ -f "$PROGUARD" ] || { echo "prepare-android: $PROGUARD not found"; exit 1; }
+if ! grep -q "com.google.mlkit" "$PROGUARD"; then
+  cat >> "$PROGUARD" <<'EOF'
+
+# QR scanner (barcode-scanner plugin + ML Kit, see scripts/prepare-android.sh).
+-keep class com.google.mlkit.** { *; }
+-keep class com.google.android.gms.vision.** { *; }
+-keep class app.tauri.barcodescanner.** { *; }
+EOF
+  echo "prepare-android: added ML Kit keep rules"
+else
+  echo "prepare-android: ML Kit keep rules already present"
+fi
+
 # Deterministic versionCode from package.json (major*1000000 +
 # minor*10000 + patch*100, e.g. 0.1.1 -> 10100). The CLI auto-increments
 # a counter kept in gitignored gen/, so throwaway builds on different
