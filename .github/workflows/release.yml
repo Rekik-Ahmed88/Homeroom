@@ -77,9 +77,14 @@ jobs:
       - run: npm ci
       - name: Init Android project
         # src-tauri/gen/ is gitignored, so fresh checkouts need scaffolding.
+        # init alone is not enough: it leaves placeholder icons and no
+        # CAMERA permission, so regenerate icons from icon.png and patch
+        # the manifest (see scripts/patch-android-manifest.sh).
         run: |
           source scripts/android-env.sh
           npx tauri android init
+          npx tauri icon src-tauri/icons/icon.png
+          bash scripts/patch-android-manifest.sh
       - name: Restore release keystore
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > /tmp/release.keystore
       - name: Build release APK
