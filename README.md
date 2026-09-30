@@ -4,6 +4,9 @@ A local-first student planner: timetable, homework, exams, and attendance — wr
 
 ![stack](https://img.shields.io/badge/tauri-v2-blue) ![react](https://img.shields.io/badge/react-19-blue) ![tailwind](https://img.shields.io/badge/tailwind-v4-blue) ![license](https://img.shields.io/badge/license-GPL--3.0-blue)
 
+> [!NOTE]
+> Homeroom is a side project I build in my free time, with the help of local LLMs.
+
 ## Screenshots
 
 | Today | Timetable | Homework |
