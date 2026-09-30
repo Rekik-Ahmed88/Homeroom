@@ -31,26 +31,41 @@ export function ScanSheet({ onDone }: { onDone: () => void }) {
   const done = useRef(false);
   const pushed = useRef(false);
   const cancelled = useRef(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const finishRef = useRef((_unwind: boolean) => {});
   const onDoneRef = useRef(onDone);
   onDoneRef.current = onDone;
 
   useEffect(() => {
+    const overlay = overlayRef.current;
     // The camera shows through only where nothing paints: hide the app
-    // page and clear the html background (index.html paints it opaque).
-    // Drawer portals live outside #root, so they stay as-is underneath.
+    // page, any open drawers (ours lives inside the settings drawer) and
+    // their scrims, and clear the html background (index.html paints it
+    // opaque). The overlay re-asserts its own visibility below.
     const root = document.getElementById("root");
     const html = document.documentElement;
+    const body = document.body;
     const prevHtmlBg = html.style.background;
-    const prevRootVisibility = root?.style.visibility;
+    const prevBodyBg = body.style.background;
+    const hidden: Array<{ el: HTMLElement; prev: string }> = [];
+    const hideEl = (el: Element | null) => {
+      if (!el || el === overlay || !(el instanceof HTMLElement)) return;
+      hidden.push({ el, prev: el.style.visibility });
+      el.style.visibility = "hidden";
+    };
+    hideEl(root);
+    document.querySelectorAll('[role="dialog"]').forEach(hideEl);
+    document
+      .querySelectorAll('div.fixed.inset-0[aria-hidden="true"]')
+      .forEach(hideEl);
     html.style.background = "transparent";
-    if (root) root.style.visibility = "hidden";
+    body.style.background = "transparent";
 
     const restoreVisuals = () => {
       html.style.background = prevHtmlBg;
-      if (root && prevRootVisibility !== undefined) {
-        root.style.visibility = prevRootVisibility;
-      }
+      body.style.background = prevBodyBg;
+      for (const { el, prev } of hidden) el.style.visibility = prev;
+      hidden.length = 0;
     };
 
     // unwind=true pops the guard entry we pushed (the drawer swallows that
@@ -161,10 +176,11 @@ export function ScanSheet({ onDone }: { onDone: () => void }) {
 
   return (
     <div
+      ref={overlayRef}
       role="dialog"
       aria-modal="true"
       aria-label="Scan QR code"
-      className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-5 bg-transparent"
+      className="visible fixed inset-0 z-[60] flex flex-col items-center justify-center gap-5 bg-transparent"
     >
       {/* Scrim via inline style: the equivalent shadow-[...] arbitrary
           utility does not emit CSS in this Tailwind setup, and the dimmed
