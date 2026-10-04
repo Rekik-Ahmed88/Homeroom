@@ -21,7 +21,7 @@ type BackupFile = {
   data: AppData;
 };
 
-export function serializeBackup(): string {
+function serializeBackup(): string {
   const body: BackupFile = {
     format: FORMAT,
     version: VERSION,

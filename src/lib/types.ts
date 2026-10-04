@@ -83,7 +83,6 @@ export type Settings = {
   studentName: string;
   theme: Theme;
   sampleBannerDismissed: boolean;
-  installHintDismissed: boolean;
   /** Master switch for due-date reminders. */
   remindersEnabled: boolean;
   /** Minutes before a class starts to remind, or null when off. */

@@ -5,7 +5,7 @@ export const THEME_META_COLOR: Record<"light" | "dark", string> = {
   dark: "#14110d",
 };
 
-export function resolveTheme(theme: Theme): "light" | "dark" {
+function resolveTheme(theme: Theme): "light" | "dark" {
   if (theme === "light" || theme === "dark") return theme;
   return window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"

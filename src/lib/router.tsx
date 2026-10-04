@@ -11,7 +11,7 @@ import {
  * custom protocol and plain file:// builds working.
  */
 
-export const PATHS = [
+const PATHS = [
   "/",
   "/timetable",
   "/homework",
@@ -39,7 +39,7 @@ function getSnapshot(): string {
 }
 
 /** Raw `#/path?query` — re-renders the caller on every hash change. */
-export function useHash(): string {
+function useHash(): string {
   return useSyncExternalStore(subscribe, getSnapshot, () => "/");
 }
 

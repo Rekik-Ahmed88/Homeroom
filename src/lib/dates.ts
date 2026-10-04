@@ -166,7 +166,7 @@ export function eachDayOfInterval(interval: { start: Date; end: Date }): Date[] 
   return days;
 }
 
-export function startOfWeek(d: Date, weekStartsOn = 1): Date {
+function startOfWeek(d: Date, weekStartsOn = 1): Date {
   const start = new Date(d);
   start.setHours(0, 0, 0, 0);
   start.setDate(start.getDate() - ((d.getDay() - weekStartsOn + 7) % 7));
