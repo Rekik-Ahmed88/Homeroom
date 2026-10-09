@@ -15,7 +15,7 @@
     "tauri:build": "tauri build",
     "build:appimage": "bash scripts/build-appimage.sh",
     "android:apk": "bash -c 'touch src-tauri/src/lib.rs && source scripts/android-env.sh && tauri android build -d -t aarch64 --apk'",
-    "android:apk:release": "bash -c 'touch src-tauri/src/lib.rs && source scripts/android-env.sh && tauri android build -t aarch64 --apk && bash scripts/sign-release-apk.sh'",
+    "android:apk:release": "bash -c 'touch src-tauri/src/lib.rs && source scripts/android-env.sh && tauri android build -t aarch64 --apk'",
     "android:dev": "bash -c 'source scripts/android-env.sh && tauri android dev'"
   },
   "dependencies": {
