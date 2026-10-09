@@ -60,7 +60,7 @@ npm run dev          # web preview on :8080
 npm run tauri:dev    # desktop window
 npm run typecheck
 npm run build        # static web build -> dist/
-npm run tauri:build  # desktop bundle (AppImage)
+npm run tauri:build  # desktop bundle (AppImage on Linux, NSIS setup on Windows)
 ```
 
 Android (see `scripts/android-env.sh` for `JAVA_HOME`/`ANDROID_HOME`/`NDK_HOME`):

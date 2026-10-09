@@ -1,8 +1,9 @@
 name: Release
 
 # Manually executed: Actions → Release → Run workflow, then enter the tag
-# (e.g. v0.1.0). Builds the Linux AppImage and both Android APKs, signs the
-# release APK, and publishes everything as a GitHub Release.
+# (e.g. v0.1.0). Builds the Linux AppImage, the Windows NSIS installer and
+# both Android APKs, signs the release APK, and publishes everything as a
+# GitHub Release.
 #
 # Required repository secrets (Settings → Secrets → Actions):
 #   ANDROID_KEYSTORE_BASE64  base64 of the release keystore:
@@ -104,8 +105,28 @@ jobs:
           name: android
           path: app-universal-release.apk
 
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm ci
+      # tauri-action installs the WiX/NSIS prerequisites itself; without a
+      # tag it only builds (no release). beforeBuildCommand runs the web build.
+      - uses: tauri-apps/tauri-action@v0
+        with:
+          args: --bundles nsis
+      - uses: actions/upload-artifact@v5
+        with:
+          name: windows
+          path: src-tauri/target/release/bundle/nsis/*.exe
+
   release:
-    needs: [desktop, android]
+    needs: [desktop, android, windows]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v5
@@ -123,3 +144,4 @@ jobs:
             *.AppImage
             *.tar.gz
             *.apk
+            *.exe
